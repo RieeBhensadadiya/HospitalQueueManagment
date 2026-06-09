@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Queue - Hospital Queue Management System</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Lucide Icons for premium iconography -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Header & Navbar -->
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">H</div>
+      <div class="logo-text">SmartQueue <span style="font-weight: 300; font-size: 0.9rem; opacity: 0.8;">CarePlus</span></div>
+    </div>
+
+    <!-- Role Switcher: Displayed only for Doctors (All access) -->
+    <div class="role-switcher" id="header-role-switcher" style="display: none;">
+      <button class="role-btn active" data-role="patient">
+        <i data-lucide="user"></i> Patient
+      </button>
+      <button class="role-btn" data-role="receptionist">
+        <i data-lucide="contact"></i> Receptionist
+      </button>
+      <button class="role-btn" data-role="doctor">
+        <i data-lucide="stethoscope"></i> Doctor
+      </button>
+    </div>
+
+    <!-- Active User Profile and Logout Control -->
+    <div id="header-user-profile" style="display: none; align-items: center; gap: 1rem;">
+      <div style="font-size: 0.9rem; font-weight: 600;" id="header-user-name">Jane Doe (Patient)</div>
+      <button class="btn btn-sm btn-danger" id="header-logout-btn">
+        <i data-lucide="log-out" style="width: 12px; height: 12px; display: inline; vertical-align: middle;"></i> Logout
+      </button>
+    </div>
+
+    <div class="utility-controls">
+      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Theme">
+        <i data-lucide="sun" class="sun-icon" style="display: none;"></i>
+        <i data-lucide="moon" class="moon-icon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+
+    <!-- 0. LOGIN GATE SCREEN -->
+    <section id="login-screen" class="dashboard-view active">
+      <div style="max-width: 500px; margin: 2rem auto;">
+        <div class="glass-card" style="padding: 2.5rem; text-align: center;">
+          <div class="logo-icon" style="width: 60px; height: 60px; margin: 0 auto 1.5rem auto; font-size: 1.8rem; border-radius: 15px;">H</div>
+          <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 800; background: linear-gradient(to right, var(--text-primary), var(--accent-hover)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hospital Portal Login</h1>
+          <p class="muted-text" style="margin-bottom: 2rem;">Please select your role and enter credentials to continue</p>
+          
+          <!-- Role selector tab buttons on the login card -->
+          <div style="display: flex; background: var(--bg-input); padding: 4px; border-radius: 30px; border: 1px solid var(--border-color); margin-bottom: 2rem;">
+            <button type="button" class="btn btn-sm active" id="login-tab-patient" style="flex: 1; border: none; border-radius: 20px; font-size: 0.85rem; padding: 0.5rem 1rem;" data-login-role="patient">
+              <i data-lucide="user" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:2px;"></i> Patient
+            </button>
+            <button type="button" class="btn btn-sm" id="login-tab-receptionist" style="flex: 1; border: none; border-radius: 20px; font-size: 0.85rem; padding: 0.5rem 1rem;" data-login-role="receptionist">
+              <i data-lucide="contact" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:2px;"></i> Receptionist
+            </button>
+            <button type="button" class="btn btn-sm" id="login-tab-doctor" style="flex: 1; border: none; border-radius: 20px; font-size: 0.85rem; padding: 0.5rem 1rem;" data-login-role="doctor">
+              <i data-lucide="stethoscope" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:2px;"></i> Doctor
+            </button>
+          </div>
+
+          <!-- Forms for each role -->
+          <form id="login-form-submit">
+            <!-- Patient input fields -->
+            <div id="login-fields-patient">
+              <div class="form-group" style="text-align: left;">
+                <label for="login-p-name">Your Full Name</label>
+                <input type="text" id="login-p-name" class="input-control" placeholder="e.g. Jane Doe">
+              </div>
+              <div class="form-group" style="text-align: left;">
+                <label for="login-p-phone">Phone Number</label>
+                <input type="tel" id="login-p-phone" class="input-control" placeholder="e.g. +1 555-0199">
+              </div>
+            </div>
+
+            <!-- Receptionist input fields -->
+            <div id="login-fields-receptionist" style="display: none;">
+              <div class="form-group" style="text-align: left;">
+                <label for="login-r-pass">Receptionist Passcode</label>
+                <input type="password" id="login-r-pass" class="input-control" placeholder="••••••••">
+              </div>
+            </div>
+
+            <!-- Doctor input fields -->
+            <div id="login-fields-doctor" style="display: none;">
+              <div class="form-group" style="text-align: left;">
+                <label for="login-d-select">Select Doctor Profile</label>
+                <select id="login-d-select" class="input-control select-control">
+                  <!-- Injected via JS -->
+                </select>
+              </div>
+              <div class="form-group" style="text-align: left;">
+                <label for="login-d-pass">Doctor Passcode</label>
+                <input type="password" id="login-d-pass" class="input-control" placeholder="••••••••">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+              <i data-lucide="log-in"></i> Sign In to Dashboard
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PATIENT DASHBOARD -->
+    <section id="patient-dashboard" class="dashboard-view">
+      <div class="grid-container">
+        <!-- Left: Booking Panel -->
+        <div>
+          <div class="glass-card">
+            <h2 class="card-title"><i data-lucide="calendar-plus"></i> Book New Appointment</h2>
+            <form id="booking-form">
+              <div class="grid-container" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="form-group">
+                  <label for="p-name">Full Name</label>
+                  <input type="text" id="p-name" class="input-control" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                  <label for="p-phone">Phone Number</label>
+                  <input type="tel" id="p-phone" class="input-control" placeholder="e.g. +1 555-0199" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="p-email">Email Address</label>
+                <input type="email" id="p-email" class="input-control" placeholder="john.doe@example.com" required>
+              </div>
+              <div class="form-group">
+                <label>Select Doctor & Department</label>
+                <div class="doctor-cards-grid" id="patient-doctor-list">
+                  <!-- Injected via JavaScript -->
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i data-lucide="check-circle-2"></i> Book Appointment & Get Queue Token
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Current Active Ticket tracker -->
+        <div>
+          <div class="glass-card" id="my-ticket-card">
+            <h2 class="card-title"><i data-lucide="ticket"></i> Active Queue Ticket</h2>
+            <div id="no-ticket-view" class="muted-text" style="text-align: center; padding: 2rem 0;">
+              <i data-lucide="calendar" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.4;"></i>
+              <p>You have no active appointments booked today.</p>
+              <p style="font-size: 0.8rem; margin-top: 0.5rem;">Fill out the form to secure your queue number.</p>
+            </div>
+            
+            <div id="active-ticket-view" class="active-ticket-display" style="display: none;">
+              <div class="ticket-glowing-ring" id="ticket-ring">
+                <span class="ticket-number" id="ticket-num">#0</span>
+                <span class="ticket-label">Token</span>
+              </div>
+              
+              <h3 id="ticket-patient-name" style="margin-bottom: 0.25rem;">John Doe</h3>
+              <p id="ticket-doc-info" class="muted-text" style="font-weight: 500;"></p>
+              
+              <div style="margin-top: 1rem;">
+                <span class="badge" id="ticket-status-badge">Scheduled</span>
+              </div>
+
+              <!-- Estimated progress tracker -->
+              <div class="queue-progress-track">
+                <div class="queue-progress-bar" id="ticket-progress-bar"></div>
+              </div>
+
+              <div class="grid-container" style="grid-template-columns: 1fr 1fr; width: 100%; margin-top: 0.5rem; text-align: center;">
+                <div>
+                  <div class="muted-text" style="font-size: 0.8rem;">Est. Wait Time</div>
+                  <div style="font-size: 1.2rem; font-weight: 700; color: var(--accent-hover);" id="ticket-wait-time">--</div>
+                </div>
+                <div>
+                  <div class="muted-text" style="font-size: 0.8rem;">People Ahead</div>
+                  <div style="font-size: 1.2rem; font-weight: 700;" id="ticket-people-ahead">--</div>
+                </div>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid var(--border-color); width: 100%; margin: 1.5rem 0;">
+
+              <div id="qr-section" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
+                <div class="muted-text" style="font-size: 0.8rem; margin-bottom: 0.5rem;">Show at Reception Desk to Check-In</div>
+                <div class="qr-code-box" id="ticket-qr-code">
+                  <!-- Vector QR Code Injected via JavaScript -->
+                </div>
+                <button class="btn btn-danger btn-sm" id="cancel-booking-btn" style="margin-top: 1rem;">
+                  <i data-lucide="x-circle"></i> Cancel Appointment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 2. RECEPTIONIST DASHBOARD -->
+    <section id="receptionist-dashboard" class="dashboard-view">
+      <div class="grid-container">
+        <!-- Left: Check In & Walk-ins -->
+        <div>
+          <!-- Quick Status Cards -->
+          <div class="grid-container" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; text-align: center;">
+              <div class="muted-text" style="font-size: 0.8rem;">Total Bookings</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: var(--purple);" id="rec-total-count">0</div>
+            </div>
+            <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; text-align: center;">
+              <div class="muted-text" style="font-size: 0.8rem;">Active Queued</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: var(--color-checkedin);" id="rec-queue-count">0</div>
+            </div>
+            <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; text-align: center;">
+              <div class="muted-text" style="font-size: 0.8rem;">Completed Today</div>
+              <div style="font-size: 1.8rem; font-weight: 800; color: var(--color-serving);" id="rec-done-count">0</div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h2 class="card-title"><i data-lucide="qr-code"></i> Check-In / Walk-In Registration</h2>
+            <form id="receptionist-checkin-form">
+              <div class="form-group">
+                <label for="rec-checkin-select">Select Online Appointment</label>
+                <select id="rec-checkin-select" class="input-control select-control">
+                  <!-- Injected via JavaScript -->
+                </select>
+              </div>
+              <div style="text-align: center; margin: 1.25rem 0;" class="muted-text">— OR REGISTER WALK-IN PATIENT —</div>
+              
+              <div class="grid-container" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="form-group">
+                  <label for="walkin-name">Patient Name</label>
+                  <input type="text" id="walkin-name" class="input-control" placeholder="e.g. Jane Doe">
+                </div>
+                <div class="form-group">
+                  <label for="walkin-phone">Phone Number</label>
+                  <input type="tel" id="walkin-phone" class="input-control" placeholder="e.g. +1 555-0199">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="walkin-doctor-select">Assign Doctor</label>
+                <select id="walkin-doctor-select" class="input-control select-control">
+                  <!-- Injected via JavaScript -->
+                </select>
+              </div>
+              
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                <i data-lucide="plus-circle"></i> Register and Check In Patient
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Queue Monitor -->
+        <div>
+          <div class="glass-card" style="margin-bottom: 0;">
+            <h2 class="card-title"><i data-lucide="monitor"></i> Real-time Queue Monitor</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="receptionist-queue-table">
+                <thead>
+                  <tr>
+                    <th>Queue #</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 3. DOCTOR DASHBOARD -->
+    <section id="doctor-dashboard" class="dashboard-view">
+      <div class="grid-container">
+        <!-- Left: Doctor Session Panel -->
+        <div>
+          <div class="glass-card">
+            <h2 class="card-title"><i data-lucide="user-check"></i> Doctor Terminal</h2>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label for="doctor-select">Acting Doctor Account</label>
+              <select id="doctor-select" class="input-control select-control">
+                <!-- Injected via JavaScript -->
+              </select>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: var(--card-radius); padding: 1.5rem; text-align: center;" id="doctor-active-cabin-panel">
+              <div class="muted-text" style="font-size: 0.8rem; margin-bottom: 0.5rem;">Active Doctor State</div>
+              <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <button class="btn btn-sm" id="btn-status-available" style="border-color: var(--color-serving); color: #34d399;">
+                  <span class="status-indicator status-online"></span> Available
+                </button>
+                <button class="btn btn-sm" id="btn-status-break" style="border-color: var(--color-checkedin); color: #facc15;">
+                  <span class="status-indicator status-break"></span> Take Break
+                </button>
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+
+              <div id="doctor-serving-patient-card">
+                <div class="muted-text" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem;">Currently Serving</div>
+                <div style="font-size: 3rem; font-weight: 800; margin: 0.5rem 0; color: var(--accent-hover);" id="doctor-serving-num">--</div>
+                <div style="font-size: 1.2rem; font-weight: 600;" id="doctor-serving-name">No active patient</div>
+                <div class="muted-text" style="font-size: 0.8rem; margin-top: 0.25rem;" id="doctor-serving-time">--</div>
+
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                  <button class="btn btn-primary" id="doctor-btn-complete" disabled>
+                    <i data-lucide="check-circle-2"></i> Complete Case
+                  </button>
+                  <button class="btn btn-secondary" id="doctor-btn-next">
+                    <i data-lucide="volume-2"></i> Call Next Patient
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Doctor Waitlist Queue -->
+        <div>
+          <div class="glass-card" style="margin-bottom: 0;">
+            <h2 class="card-title"><i data-lucide="list-ordered"></i> Doctor Waiting List (Checked In)</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="doctor-waitlist-table">
+                <thead>
+                  <tr>
+                    <th>Queue #</th>
+                    <th>Patient Name</th>
+                    <th>Check-in Time</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Floating Sidebar Panel: SMS Simulator Log (Simulating real-time text alert notifications) -->
+    <div class="glass-card" style="margin-top: 2rem; margin-bottom: 0;">
+      <h2 class="card-title" style="justify-content: space-between;">
+        <span><i data-lucide="message-square"></i> Patient SMS Notification Dispatcher (Simulation)</span>
+        <span class="badge badge-completed" style="font-size: 0.7rem;" id="sms-badge-count">0 Sent</span>
+      </h2>
+      <div class="notification-log-panel" id="sms-log-container">
+        <!-- Injected via JavaScript -->
+        <div class="muted-text" style="text-align: center; padding: 1.5rem 0;">No notifications sent yet. Check in a patient or call them from the doctor dashboard.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer style="margin-top: auto; padding: 2rem; border-top: 1px solid var(--border-color); text-align: center;" class="muted-text">
+    <p>© 2026 SmartQueue CarePlus. Engineered for modern clinic operations.</p>
+  </footer>
+
+  <!-- App logic imports -->
+  <script type="module" src="js/app.js?v=1.2"></script>
+</body>
+</html>
